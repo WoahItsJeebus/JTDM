@@ -13,6 +13,7 @@
 		<style>
 			/* ── Infinite-grid landing page ─────────────────────────── */
 			html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+			body { user-select: none; -webkit-user-select: none; }
 
 			/* Grid viewport — fills the screen behind everything */
 			#gridViewport {
@@ -21,8 +22,9 @@
 				cursor: grab;
 				z-index: 0;
 				background: var(--bg, #0b0f17);
+				touch-action: none;
 			}
-			#gridViewport.dragging { cursor: grabbing; }
+			body.dragging, body.dragging * { cursor: grabbing !important; }
 
 			/*
 			   Seamless grid lines via an inline SVG data-URI.
@@ -205,16 +207,21 @@
 			}
 
 			// ── Pointer (mouse) events ────────────────────────────
-			viewport.addEventListener("pointerdown", e => {
-				if (e.button !== 0) return           // LMB only
+			function isInteractive(el) {
+				return el && el.closest(".tabBtn, .versionBadge, a, button, input, select, textarea")
+			}
+
+			document.addEventListener("pointerdown", e => {
+				if (e.button !== 0) return
+				if (isInteractive(e.target)) return
+				e.preventDefault()
 				dragging = true
 				startX = e.clientX; startY = e.clientY
 				startOX = offsetX;  startOY = offsetY
-				viewport.classList.add("dragging")
-				viewport.setPointerCapture(e.pointerId)
+				document.body.classList.add("dragging")
 			})
 
-			window.addEventListener("pointermove", e => {
+			document.addEventListener("pointermove", e => {
 				if (!dragging) return
 				offsetX = startOX + (e.clientX - startX)
 				offsetY = startOY + (e.clientY - startY)
@@ -222,41 +229,43 @@
 				showCoords()
 			})
 
-			window.addEventListener("pointerup", () => {
+			document.addEventListener("pointerup", () => {
 				if (!dragging) return
 				dragging = false
-				viewport.classList.remove("dragging")
+				document.body.classList.remove("dragging")
 			})
 
 			// ── Touch events (multi-touch / mobile) ───────────────
 			let touchId = null
-			viewport.addEventListener("touchstart", e => {
+			document.addEventListener("touchstart", e => {
 				if (touchId !== null) return
+				if (isInteractive(e.target)) return
 				const t = e.changedTouches[0]
 				touchId = t.identifier
 				startX = t.clientX; startY = t.clientY
 				startOX = offsetX;  startOY = offsetY
 				dragging = true
-				viewport.classList.add("dragging")
-			}, { passive: true })
+				document.body.classList.add("dragging")
+			}, { passive: false })
 
-			window.addEventListener("touchmove", e => {
+			document.addEventListener("touchmove", e => {
 				if (!dragging) return
 				for (const t of e.changedTouches) {
 					if (t.identifier !== touchId) continue
+					e.preventDefault()
 					offsetX = startOX + (t.clientX - startX)
 					offsetY = startOY + (t.clientY - startY)
 					applyTransform()
 					showCoords()
 				}
-			}, { passive: true })
+			}, { passive: false })
 
-			window.addEventListener("touchend", e => {
+			document.addEventListener("touchend", e => {
 				for (const t of e.changedTouches) {
 					if (t.identifier !== touchId) continue
 					dragging = false
 					touchId = null
-					viewport.classList.remove("dragging")
+					document.body.classList.remove("dragging")
 				}
 			})
 
