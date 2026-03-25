@@ -60,7 +60,10 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 
 /* Floating content layer on top of grid */
 #gridContent {
-	position: fixed; inset: 0;
+	/* Set to 10px above bottom of viewport */
+	position: fixed;
+	bottom: 10px; left: 50%;
+	transform: translateX(-50%);
 	display: flex; flex-direction: column;
 	pointer-events: none;
 	z-index: 1;
@@ -119,3 +122,185 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 
 /* Tab bar sits on top */
 .tabsBar { position: relative; z-index: 3; pointer-events: auto; }
+
+/* ── Add button (morphing circle → dropdown) ──────────── */
+#addBtnWrap {
+	position: fixed;
+	top: 16px; right: 16px;
+	z-index: 10;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
+
+#addBtn {
+	width: 44px; height: 44px;
+	border-radius: 50%;
+	border: 1px solid rgba(255,255,255,0.12);
+	background: rgba(20,24,36,0.85);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	color: #eef1f6;
+	font-size: 1.5rem;
+	line-height: 1;
+	cursor: pointer;
+	transition: transform .25s, border-radius .3s, width .3s, height .3s, background .25s;
+	display: flex; align-items: center; justify-content: center;
+	pointer-events: auto;
+}
+#addBtn:hover { background: rgba(30,36,54,0.95); }
+#addBtnWrap.open #addBtn {
+	transform: rotate(45deg);
+	background: rgba(255,60,80,0.25);
+	border-color: rgba(255,60,80,0.35);
+}
+
+#addDropdown {
+	margin-top: 6px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	opacity: 0;
+	transform: translateY(-8px) scale(0.95);
+	pointer-events: none;
+	transition: opacity .2s, transform .25s;
+}
+#addBtnWrap.open #addDropdown {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+	pointer-events: auto;
+}
+
+#addDropdown button {
+	padding: 8px 18px;
+	border-radius: 10px;
+	border: 1px solid rgba(255,255,255,0.1);
+	background: rgba(20,24,36,0.9);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	color: #eef1f6;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: background .15s;
+}
+#addDropdown button:hover { background: rgba(40,48,72,0.95); }
+
+/* ── Board items (entries & sections on grid) ─────────── */
+.board-entry, .board-section {
+	position: absolute;
+	cursor: grab;
+	user-select: none;
+	-webkit-user-select: none;
+}
+.board-entry.dragging, .board-section.dragging { cursor: grabbing; z-index: 12 !important; }
+
+/* Entries — rectangular bubbles */
+.board-entry {
+	z-index: 5;
+	min-width: 180px;
+	max-width: 340px;
+	background: rgba(22,28,42,0.92);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border: 1px solid rgba(255,255,255,0.1);
+	border-radius: 14px;
+	padding: 14px 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.board-entry .entry-title {
+	font-size: 0.88rem;
+	font-weight: 700;
+	color: #eef1f6;
+	border: none; background: transparent;
+	outline: none;
+	padding: 0;
+	font-family: inherit;
+	cursor: text;
+	user-select: text;
+	-webkit-user-select: text;
+}
+.board-entry .entry-text {
+	font-size: 0.8rem;
+	color: #9ca3b4;
+	border: none; background: transparent;
+	outline: none;
+	resize: none;
+	padding: 0;
+	font-family: inherit;
+	min-height: 22px;
+	cursor: text;
+	user-select: text;
+	-webkit-user-select: text;
+}
+
+/* Sections — wider, translucent containers */
+.board-section {
+	z-index: 2;
+	min-width: 260px;
+	min-height: 120px;
+	background: rgba(16,20,32,0.55);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+	border: 1px dashed rgba(255,255,255,0.08);
+	border-radius: 18px;
+	padding: 14px 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.board-section .section-title {
+	font-size: 0.82rem;
+	font-weight: 700;
+	color: rgba(238,241,246,0.7);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	border: none; background: transparent;
+	outline: none;
+	padding: 0;
+	font-family: inherit;
+	cursor: text;
+	user-select: text;
+	-webkit-user-select: text;
+}
+.board-section .section-text {
+	font-size: 0.78rem;
+	color: #5a6070;
+	border: none; background: transparent;
+	outline: none;
+	resize: none;
+	padding: 0;
+	font-family: inherit;
+	min-height: 18px;
+	cursor: text;
+	user-select: text;
+	-webkit-user-select: text;
+}
+
+/* Delete button on items */
+.board-delete {
+	position: absolute;
+	top: 6px; right: 8px;
+	width: 20px; height: 20px;
+	border: none; background: transparent;
+	color: rgba(255,255,255,0.25);
+	font-size: 0.85rem;
+	cursor: pointer;
+	display: flex; align-items: center; justify-content: center;
+	border-radius: 50%;
+	transition: color .15s, background .15s;
+	opacity: 0;
+	pointer-events: none;
+}
+.board-entry:hover .board-delete,
+.board-section:hover .board-delete {
+	opacity: 1;
+	pointer-events: auto;
+}
+.board-delete:hover {
+	color: #ff3c50;
+	background: rgba(255,60,80,0.12);
+}

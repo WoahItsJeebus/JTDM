@@ -59,7 +59,7 @@ export function initGridDrag() {
 	}
 
 	function isInteractive(el) {
-		return el && el.closest(".tabBtn, .versionBadge, a, button, input, select, textarea")
+		return el && el.closest(".tabBtn, .versionBadge, a, button, input, select, textarea, .board-entry, .board-section, #addBtnWrap")
 	}
 
 	// Pointer events
@@ -122,4 +122,6 @@ export function initGridDrag() {
 	})
 
 	applyTransform()
+
+	return { getOffset: () => ({ x: offsetX, y: offsetY }), surface, CELL }
 }

@@ -34,14 +34,25 @@
 			</div>
 		</div>
 
+		<!-- ── Add button (top-right) ──────────────────────────── -->
+		<div id="addBtnWrap">
+			<button id="addBtn" aria-label="Add item">+</button>
+			<div id="addDropdown">
+				<button data-action="entry">Add Entry</button>
+				<button data-action="section">Add Section</button>
+			</div>
+		</div>
+
 		<!-- ── Coordinate readout ──────────────────────────────── -->
 		<div id="coordPill">0, 0</div>
 
 		<script type="module">
 			import { initPage, loadVersionBadge, initGridDrag } from "./assets/site.js"
+			import { initBoard } from "./assets/board.js"
 			initPage("home")
 			loadVersionBadge()
-			initGridDrag()
+			const grid = initGridDrag()
+			initBoard(grid)
 		</script>
 	</body>
 </html>
