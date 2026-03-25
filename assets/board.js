@@ -119,10 +119,30 @@ function createSectionEl(item, surface) {
 	return el
 }
 
+// ── Helpers: find entries inside a section ─────────────
+function getAttachedEntries(sectionItem) {
+	// Returns { item, el } pairs for every entry fully within the section bounds
+	const sx = sectionItem.x, sy = sectionItem.y
+	const sw = sectionItem.w, sh = sectionItem.h
+	const results = []
+	for (const entry of _items) {
+		if (entry.type !== "entry") continue
+		const el = document.querySelector(`.board-entry[data-id="${entry.id}"]`)
+		if (!el) continue
+		const ew = el.offsetWidth, eh = el.offsetHeight
+		if (entry.x >= sx && entry.y >= sy &&
+			entry.x + ew <= sx + sw && entry.y + eh <= sy + sh) {
+			results.push({ item: entry, el })
+		}
+	}
+	return results
+}
+
 // ── Item dragging (on grid surface) ────────────────────
 function makeDraggable(el, item) {
 	let dragging = false
 	let startX, startY, origLeft, origTop
+	let attached = [] // entries riding along with a section drag
 
 	function isNonDrag(target) {
 		return target.closest("input, textarea, .board-delete, .board-color, .resize-handle")
@@ -137,14 +157,32 @@ function makeDraggable(el, item) {
 		el.setPointerCapture(e.pointerId)
 		startX = e.clientX; startY = e.clientY
 		origLeft = item.x; origTop = item.y
+
+		// If this is a section, snapshot attached entries
+		attached = []
+		if (item.type === "section") {
+			for (const a of getAttachedEntries(item)) {
+				attached.push({ item: a.item, el: a.el, origX: a.item.x, origY: a.item.y })
+			}
+		}
 	})
 
 	el.addEventListener("pointermove", e => {
 		if (!dragging) return
-		item.x = origLeft + (e.clientX - startX)
-		item.y = origTop  + (e.clientY - startY)
+		const dx = e.clientX - startX
+		const dy = e.clientY - startY
+		item.x = origLeft + dx
+		item.y = origTop  + dy
 		el.style.left = `${item.x}px`
 		el.style.top  = `${item.y}px`
+
+		// Move attached entries in lockstep
+		for (const a of attached) {
+			a.item.x = a.origX + dx
+			a.item.y = a.origY + dy
+			a.el.style.left = `${a.item.x}px`
+			a.el.style.top  = `${a.item.y}px`
+		}
 	})
 
 	el.addEventListener("pointerup", e => {
@@ -152,6 +190,7 @@ function makeDraggable(el, item) {
 		dragging = false
 		el.classList.remove("dragging")
 		el.releasePointerCapture(e.pointerId)
+		attached = []
 		persist()
 	})
 }
