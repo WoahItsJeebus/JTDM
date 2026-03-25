@@ -135,19 +135,39 @@ export function initGridDrag() {
 	updateGlowRadius()
 
 	if (cursorGlow) {
-		document.addEventListener("pointermove", e => {
-			const rect = surface.getBoundingClientRect()
-			const sx = e.clientX - rect.left
-			const sy = e.clientY - rect.top
+		let glowTimer = 0
+
+		function showGlow(sx, sy) {
 			const r = glowCells * CELL
 			cursorGlow.style.webkitMaskPosition = `${sx - r}px ${sy - r}px`
 			cursorGlow.style.maskPosition = `${sx - r}px ${sy - r}px`
 			cursorGlow.style.opacity = "1"
+			clearTimeout(glowTimer)
+			glowTimer = setTimeout(() => { cursorGlow.style.opacity = "0" }, 1000)
+		}
+
+		// Mouse only — ignore touch-sourced pointer events
+		document.addEventListener("pointermove", e => {
+			if (e.pointerType === "touch") return
+			const rect = surface.getBoundingClientRect()
+			showGlow(e.clientX - rect.left, e.clientY - rect.top)
 		})
 
-		document.addEventListener("pointerleave", () => {
+		document.addEventListener("pointerleave", e => {
+			if (e.pointerType === "touch") return
+			clearTimeout(glowTimer)
 			cursorGlow.style.opacity = "0"
 		})
+
+		// Hide immediately on any touch start/end
+		document.addEventListener("touchstart", () => {
+			clearTimeout(glowTimer)
+			cursorGlow.style.opacity = "0"
+		}, { passive: true })
+		document.addEventListener("touchend", () => {
+			clearTimeout(glowTimer)
+			cursorGlow.style.opacity = "0"
+		}, { passive: true })
 	}
 
 	return {
