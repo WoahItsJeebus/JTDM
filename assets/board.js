@@ -4,6 +4,16 @@
 
 const STORAGE_KEY = "jtdm-board-items"
 
+const SECTION_COLORS = [
+	"rgba(0,255,255,0.12)",
+	"rgba(120,90,255,0.14)",
+	"rgba(255,180,0,0.12)",
+	"rgba(255,60,80,0.12)",
+	"rgba(0,200,120,0.12)",
+	"rgba(255,100,200,0.12)",
+	"rgba(80,160,255,0.12)",
+]
+
 // ── Persistence helpers ────────────────────────────────
 function loadItems() {
 	try {
@@ -21,6 +31,15 @@ let _nextId = 1
 
 function persist() { saveItems(_items) }
 
+// ── Coordinate helper: viewport center → surface-local ─
+function viewportCenterOnSurface(surface) {
+	const rect = surface.getBoundingClientRect()
+	return {
+		x: (window.innerWidth  / 2) - rect.left,
+		y: (window.innerHeight / 2) - rect.top,
+	}
+}
+
 // ── DOM builders ───────────────────────────────────────
 function createEntryEl(item, surface) {
 	const el = document.createElement("div")
@@ -37,7 +56,6 @@ function createEntryEl(item, surface) {
 	el.querySelector(".entry-title").value = item.title
 	el.querySelector(".entry-text").value  = item.text
 
-	// Editable fields → save on change
 	el.querySelector(".entry-title").addEventListener("input", e => {
 		item.title = e.target.value; persist()
 	})
@@ -45,7 +63,6 @@ function createEntryEl(item, surface) {
 		item.text = e.target.value; persist()
 	})
 
-	// Delete
 	el.querySelector(".board-delete").addEventListener("click", () => {
 		_items = _items.filter(i => i.id !== item.id)
 		el.remove()
@@ -61,22 +78,24 @@ function createSectionEl(item, surface) {
 	const el = document.createElement("div")
 	el.className = "board-section"
 	el.dataset.id = item.id
-	el.style.left = `${item.x}px`
-	el.style.top  = `${item.y}px`
+	el.style.left   = `${item.x}px`
+	el.style.top    = `${item.y}px`
+	el.style.width  = `${item.w}px`
+	el.style.height = `${item.h}px`
+	el.style.background = item.color
 
 	el.innerHTML =
 		`<button class="board-delete" title="Delete">&times;</button>` +
-		`<input class="section-title" value="" placeholder="Section" spellcheck="false">` +
-		`<textarea class="section-text" placeholder="Description..." spellcheck="false"></textarea>`
+		`<button class="board-color" title="Change color">&#9673;</button>` +
+		`<input class="section-title" value="" placeholder="Section title" spellcheck="false">` +
+		`<div class="resize-handle resize-r"></div>` +
+		`<div class="resize-handle resize-b"></div>` +
+		`<div class="resize-handle resize-br"></div>`
 
 	el.querySelector(".section-title").value = item.title
-	el.querySelector(".section-text").value  = item.text
 
 	el.querySelector(".section-title").addEventListener("input", e => {
 		item.title = e.target.value; persist()
-	})
-	el.querySelector(".section-text").addEventListener("input", e => {
-		item.text = e.target.value; persist()
 	})
 
 	el.querySelector(".board-delete").addEventListener("click", () => {
@@ -85,7 +104,17 @@ function createSectionEl(item, surface) {
 		persist()
 	})
 
+	// Color cycling
+	el.querySelector(".board-color").addEventListener("click", e => {
+		e.stopPropagation()
+		const idx = SECTION_COLORS.indexOf(item.color)
+		item.color = SECTION_COLORS[(idx + 1) % SECTION_COLORS.length]
+		el.style.background = item.color
+		persist()
+	})
+
 	makeDraggable(el, item)
+	makeResizable(el, item)
 	surface.appendChild(el)
 	return el
 }
@@ -95,12 +124,12 @@ function makeDraggable(el, item) {
 	let dragging = false
 	let startX, startY, origLeft, origTop
 
-	function isEditable(target) {
-		return target.closest("input, textarea, .board-delete")
+	function isNonDrag(target) {
+		return target.closest("input, textarea, .board-delete, .board-color, .resize-handle")
 	}
 
 	el.addEventListener("pointerdown", e => {
-		if (e.button !== 0 || isEditable(e.target)) return
+		if (e.button !== 0 || isNonDrag(e.target)) return
 		e.preventDefault()
 		e.stopPropagation()
 		dragging = true
@@ -124,6 +153,47 @@ function makeDraggable(el, item) {
 		el.classList.remove("dragging")
 		el.releasePointerCapture(e.pointerId)
 		persist()
+	})
+}
+
+// ── Section resizing ─────────────────────────────────────
+function makeResizable(el, item) {
+	const MIN_W = 160, MIN_H = 80
+
+	el.querySelectorAll(".resize-handle").forEach(handle => {
+		let active = false
+		let startX, startY, origW, origH
+
+		handle.addEventListener("pointerdown", e => {
+			e.preventDefault()
+			e.stopPropagation()
+			active = true
+			handle.setPointerCapture(e.pointerId)
+			startX = e.clientX; startY = e.clientY
+			origW = item.w; origH = item.h
+		})
+
+		handle.addEventListener("pointermove", e => {
+			if (!active) return
+			const dx = e.clientX - startX
+			const dy = e.clientY - startY
+
+			if (handle.classList.contains("resize-r") || handle.classList.contains("resize-br")) {
+				item.w = Math.max(MIN_W, origW + dx)
+				el.style.width = `${item.w}px`
+			}
+			if (handle.classList.contains("resize-b") || handle.classList.contains("resize-br")) {
+				item.h = Math.max(MIN_H, origH + dy)
+				el.style.height = `${item.h}px`
+			}
+		})
+
+		handle.addEventListener("pointerup", e => {
+			if (!active) return
+			active = false
+			handle.releasePointerCapture(e.pointerId)
+			persist()
+		})
 	})
 }
 
@@ -152,28 +222,30 @@ export function initBoard(grid) {
 		e.stopPropagation()
 		wrap.classList.remove("open")
 
-		// Place new item at viewport centre (translate to surface coords)
-		const offset = grid.getOffset()
-		const cx = (window.innerWidth  / 2) - offset.x - (surface.offsetWidth  / 2)
-		const cy = (window.innerHeight / 2) - offset.y - (surface.offsetHeight / 2)
-
-		// Round to nearest half-cell for a tidy default position
-		const x = Math.round(cx / 30) * 30
-		const y = Math.round(cy / 30) * 30
+		// Place new item at the current grid center (viewport center → surface coords)
+		const pos = viewportCenterOnSurface(surface)
 
 		const item = {
 			id: _nextId++,
-			type: action,     // "entry" | "section"
-			x, y,
+			type: action,
+			x: Math.round(pos.x),
+			y: Math.round(pos.y),
 			title: "",
-			text: "",
 		}
 
-		_items.push(item)
-		persist()
-
-		if (action === "entry")   createEntryEl(item, surface)
-		if (action === "section") createSectionEl(item, surface)
+		if (action === "entry") {
+			item.text = ""
+			_items.push(item)
+			persist()
+			createEntryEl(item, surface)
+		} else if (action === "section") {
+			item.w = 300
+			item.h = 180
+			item.color = SECTION_COLORS[0]
+			_items.push(item)
+			persist()
+			createSectionEl(item, surface)
+		}
 	})
 
 	// ── Restore saved items ────────────────────────────

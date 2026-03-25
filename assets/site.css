@@ -237,20 +237,18 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 	-webkit-user-select: text;
 }
 
-/* Sections — wider, translucent containers */
+/* Sections — color-customizable resizable containers */
 .board-section {
 	z-index: 2;
-	min-width: 260px;
-	min-height: 120px;
-	background: rgba(16,20,32,0.55);
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
-	border: 1px dashed rgba(255,255,255,0.08);
+	min-width: 160px;
+	min-height: 80px;
+	background: rgba(0,255,255,0.12);
+	border: 1px solid rgba(255,255,255,0.08);
 	border-radius: 18px;
 	padding: 14px 18px;
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	box-sizing: border-box;
 }
 .board-section .section-title {
 	font-size: 0.82rem;
@@ -266,18 +264,62 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 	user-select: text;
 	-webkit-user-select: text;
 }
-.board-section .section-text {
-	font-size: 0.78rem;
-	color: #5a6070;
+
+/* Color-cycle button */
+.board-color {
+	position: absolute;
+	top: 6px; right: 30px;
+	width: 20px; height: 20px;
 	border: none; background: transparent;
-	outline: none;
-	resize: none;
-	padding: 0;
-	font-family: inherit;
-	min-height: 18px;
-	cursor: text;
-	user-select: text;
-	-webkit-user-select: text;
+	color: rgba(255,255,255,0.3);
+	font-size: 1rem;
+	cursor: pointer;
+	display: flex; align-items: center; justify-content: center;
+	border-radius: 50%;
+	transition: color .15s;
+	opacity: 0;
+	pointer-events: none;
+}
+.board-section:hover .board-color { opacity: 1; pointer-events: auto; }
+.board-color:hover { color: rgba(255,255,255,0.7); }
+
+/* ── Resize handles with gradient highlights ──────────── */
+.resize-handle {
+	position: absolute;
+	z-index: 3;
+}
+
+/* Right edge */
+.resize-r {
+	top: 18px; right: 0; bottom: 18px; width: 7px;
+	cursor: ew-resize;
+	border-radius: 0 18px 18px 0;
+	transition: background .15s;
+}
+.resize-r:hover {
+	background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.12) 100%);
+}
+
+/* Bottom edge */
+.resize-b {
+	left: 18px; bottom: 0; right: 18px; height: 7px;
+	cursor: ns-resize;
+	border-radius: 0 0 18px 18px;
+	transition: background .15s;
+}
+.resize-b:hover {
+	background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.12) 100%);
+}
+
+/* Bottom-right corner */
+.resize-br {
+	right: 0; bottom: 0; width: 18px; height: 18px;
+	cursor: nwse-resize;
+	border-radius: 0 0 18px 0;
+	transition: background .15s;
+}
+.resize-br:hover {
+	background: radial-gradient(ellipse at 100% 100%, rgba(255,255,255,0.15) 0%, transparent 70%);
 }
 
 /* Delete button on items */

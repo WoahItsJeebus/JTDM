@@ -59,7 +59,7 @@ export function initGridDrag() {
 	}
 
 	function isInteractive(el) {
-		return el && el.closest(".tabBtn, .versionBadge, a, button, input, select, textarea, .board-entry, .board-section, #addBtnWrap")
+		return el && el.closest(".tabBtn, .versionBadge, a, button, input, select, textarea, .board-entry, .board-section, .resize-handle, #addBtnWrap")
 	}
 
 	// Pointer events
