@@ -129,14 +129,13 @@ export function initGridDrag() {
 
 	function updateGlowRadius() {
 		if (!cursorGlow) return
-		const px = glowCells * CELL
-		cursorGlow.style.setProperty("--glow-radius", `${px}px`)
+		const d = glowCells * CELL * 2
+		cursorGlow.style.setProperty("--glow-diameter", `${d}px`)
 	}
 	updateGlowRadius()
 
 	if (cursorGlow) {
 		document.addEventListener("pointermove", e => {
-			// Convert viewport coords to surface-local coords
 			const rect = surface.getBoundingClientRect()
 			const sx = e.clientX - rect.left
 			const sy = e.clientY - rect.top

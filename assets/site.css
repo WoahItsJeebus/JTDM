@@ -39,10 +39,12 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 	pointer-events: none;
 	opacity: 0;
 	transition: opacity .2s;
-	-webkit-mask-image: radial-gradient(circle var(--glow-radius, 180px), rgba(0,0,0,1) 0%, transparent 100%);
-	        mask-image: radial-gradient(circle var(--glow-radius, 180px), rgba(0,0,0,1) 0%, transparent 100%);
+	-webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, transparent 70%);
+	        mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, transparent 70%);
 	-webkit-mask-repeat: no-repeat;
 	        mask-repeat: no-repeat;
+	-webkit-mask-size: var(--glow-diameter, 360px) var(--glow-diameter, 360px);
+	        mask-size: var(--glow-diameter, 360px) var(--glow-diameter, 360px);
 	will-change: mask-position, -webkit-mask-position;
 }
 
