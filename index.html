@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+		<meta name="theme-color" content="#0b0f17">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<title>JUIL — Jeebus' Universal Interface Library</title>
+		<link rel="icon" href="favicon.ico" sizes="any">
+		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+		<link rel="stylesheet" href="https://woahitsjeebus.github.io/JUIL/assets/site.css">
+		<style>
+			/* ── Infinite-grid landing page ─────────────────────────── */
+			html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+
+			/* Grid viewport — fills the screen behind everything */
+			#gridViewport {
+				position: fixed; inset: 0;
+				overflow: hidden;
+				cursor: grab;
+				z-index: 0;
+				background: var(--bg, #0b0f17);
+			}
+			#gridViewport.dragging { cursor: grabbing; }
+
+			/*
+			   Seamless grid lines via an inline SVG data-URI.
+			   60×60 cell with 1 px lines — tiles infinitely.
+			*/
+			#gridSurface {
+				position: absolute;
+				inset: -200% -200% -200% -200%;   /* vastly oversized so we never see edges */
+				width: 500%; height: 500%;
+				will-change: transform;
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M0 0H60V60' fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1'/%3E%3C/svg%3E");
+				background-size: 60px 60px;
+			}
+
+			/* Radial glow at the grid origin (visual anchor) */
+			#gridGlow {
+				position: absolute;
+				width: 520px; height: 520px;
+				border-radius: 50%;
+				pointer-events: none;
+				background: radial-gradient(circle, rgba(0,255,255,0.08) 0%, transparent 70%);
+				transform: translate(-50%, -50%);
+				will-change: left, top;
+			}
+
+			/* Crosshair at the origin */
+			#gridOrigin {
+				position: absolute;
+				width: 24px; height: 24px;
+				transform: translate(-50%, -50%);
+				pointer-events: none;
+			}
+			#gridOrigin::before,
+			#gridOrigin::after {
+				content: "";
+				position: absolute;
+				background: rgba(255,255,255,0.18);
+				border-radius: 1px;
+			}
+			#gridOrigin::before { width: 1px; height: 100%; left: 50%; top: 0; }
+			#gridOrigin::after  { height: 1px; width: 100%; top: 50%; left: 0; }
+
+			/* Floating content layer on top of grid */
+			#gridContent {
+				position: fixed; inset: 0;
+				display: flex; flex-direction: column;
+				pointer-events: none;          /* let clicks pass through to the grid */
+				z-index: 1;
+			}
+			#gridContent > * { pointer-events: auto; }    /* re-enable for child elements */
+
+			/* Centre hero */
+			.hero {
+				flex: 1;
+				display: flex; flex-direction: column;
+				align-items: center; justify-content: center;
+				text-align: center;
+				padding: 0 24px;
+				pointer-events: none;
+				gap: 8px;
+			}
+			.hero h1 {
+				font-size: clamp(1.6rem, 5vw, 2.6rem);
+				font-weight: 900; letter-spacing: -0.02em;
+				color: var(--text, #eef1f6);
+				margin: 0;
+			}
+			.hero .sub {
+				font-size: 0.95rem;
+				color: var(--muted, #5a6070);
+				font-weight: 600;
+			}
+			.hero .versionBadge {
+				margin-top: 6px;
+				pointer-events: auto;
+			}
+
+			/* Coordinate readout */
+			#coordPill {
+				position: fixed;
+				bottom: 60px; left: 50%;
+				transform: translateX(-50%);
+				font-family: monospace;
+				font-size: 0.75rem;
+				color: var(--muted, #5a6070);
+				background: rgba(11,15,23,0.55);
+				backdrop-filter: blur(6px);
+				-webkit-backdrop-filter: blur(6px);
+				border: 1px solid rgba(255,255,255,0.06);
+				padding: 4px 14px;
+				border-radius: 20px;
+				z-index: 2;
+				pointer-events: none;
+				user-select: none;
+				opacity: 0;
+				transition: opacity .25s;
+			}
+			#coordPill.visible { opacity: 1; }
+
+			/* Tab bar sits on top */
+			.tabsBar { position: relative; z-index: 3; }
+		</style>
+	</head>
+
+	<body>
+		<!-- ── Infinite draggable grid ──────────────────────────── -->
+		<div id="gridViewport">
+			<div id="gridSurface">
+				<div id="gridGlow"></div>
+				<div id="gridOrigin"></div>
+			</div>
+		</div>
+
+		<!-- ── Floating UI layer ───────────────────────────────── -->
+		<div id="gridContent">
+			<div class="hero">
+				<h1>Jeebus' Data-Driven&nbsp;Table Manager</h1>
+				<div class="sub">drag the grid — explore the void</div>
+				<code class="inline versionBadge" id="versionCode">v—</code>
+			</div>
+
+			<div class="tabsBar" style="width:100%;">
+				<nav class="tabs"><a class="tabBtn active" data-tab="home" href="./"><span class="tabDot"></span>Home</a><a class="tabBtn" data-tab="settings" href="./pages/settings/"><span class="tabDot"></span>Settings</a><a class="tabBtn" data-tab="about" href="./pages/about/"><span class="tabDot"></span>About</a></nav>
+			</div>
+		</div>
+
+		<!-- ── Coordinate readout ──────────────────────────────── -->
+		<div id="coordPill">0, 0</div>
+
+		<script type="module">
+			import {
+				autoMarkActiveTab,
+				initAppSettings,
+				startOrbBackgroundFromSettings,
+			} from "https://woahitsjeebus.github.io/JUIL/assets/site.js"
+
+			// ── App init ───────────────────────────────────────────
+			initAppSettings()
+			startOrbBackgroundFromSettings({ spawnEveryMs: 1600, sizeMin: 340, sizeMax: 720 })
+			autoMarkActiveTab("home")
+
+			// ── Version badge ──────────────────────────────────────
+			fetch("./assets/versions.json", { cache: "no-store" })
+				.then(r => r.ok ? r.json() : Promise.reject())
+				.then(d => { document.getElementById("versionCode").textContent = `v${d.current || "?"}` })
+				.catch(() => { document.getElementById("versionCode").textContent = "v?" })
+
+			// ── Infinite grid drag logic ───────────────────────────
+			const viewport  = document.getElementById("gridViewport")
+			const surface   = document.getElementById("gridSurface")
+			const glow      = document.getElementById("gridGlow")
+			const origin    = document.getElementById("gridOrigin")
+			const coordPill = document.getElementById("coordPill")
+
+			const CELL = 60                         // grid cell size in px
+			let offsetX = 0, offsetY = 0            // cumulative pan offset
+			let dragging = false
+			let startX = 0, startY = 0              // pointer start position
+			let startOX = 0, startOY = 0            // offset at drag start
+			let coordTimer = 0
+
+			function applyTransform() {
+				surface.style.transform = `translate(${offsetX}px, ${offsetY}px)`
+
+				// Position glow + origin relative to the surface centre
+				const cx = surface.offsetWidth  / 2 + offsetX
+				const cy = surface.offsetHeight / 2 + offsetY
+				glow.style.left = `${cx}px`
+				glow.style.top  = `${cy}px`
+				origin.style.left = `${cx}px`
+				origin.style.top  = `${cy}px`
+			}
+
+			function showCoords() {
+				// Display offset in grid-cell units, origin = 0,0
+				const gx = Math.round(-offsetX / CELL)
+				const gy = Math.round(-offsetY / CELL)
+				coordPill.textContent = `${gx}, ${gy}`
+				coordPill.classList.add("visible")
+				clearTimeout(coordTimer)
+				coordTimer = setTimeout(() => coordPill.classList.remove("visible"), 1200)
+			}
+
+			// ── Pointer (mouse) events ────────────────────────────
+			viewport.addEventListener("pointerdown", e => {
+				if (e.button !== 0) return           // LMB only
+				dragging = true
+				startX = e.clientX; startY = e.clientY
+				startOX = offsetX;  startOY = offsetY
+				viewport.classList.add("dragging")
+				viewport.setPointerCapture(e.pointerId)
+			})
+
+			window.addEventListener("pointermove", e => {
+				if (!dragging) return
+				offsetX = startOX + (e.clientX - startX)
+				offsetY = startOY + (e.clientY - startY)
+				applyTransform()
+				showCoords()
+			})
+
+			window.addEventListener("pointerup", () => {
+				if (!dragging) return
+				dragging = false
+				viewport.classList.remove("dragging")
+			})
+
+			// ── Touch events (multi-touch / mobile) ───────────────
+			let touchId = null
+			viewport.addEventListener("touchstart", e => {
+				if (touchId !== null) return
+				const t = e.changedTouches[0]
+				touchId = t.identifier
+				startX = t.clientX; startY = t.clientY
+				startOX = offsetX;  startOY = offsetY
+				dragging = true
+				viewport.classList.add("dragging")
+			}, { passive: true })
+
+			window.addEventListener("touchmove", e => {
+				if (!dragging) return
+				for (const t of e.changedTouches) {
+					if (t.identifier !== touchId) continue
+					offsetX = startOX + (t.clientX - startX)
+					offsetY = startOY + (t.clientY - startY)
+					applyTransform()
+					showCoords()
+				}
+			}, { passive: true })
+
+			window.addEventListener("touchend", e => {
+				for (const t of e.changedTouches) {
+					if (t.identifier !== touchId) continue
+					dragging = false
+					touchId = null
+					viewport.classList.remove("dragging")
+				}
+			})
+
+			// ── Initial paint ─────────────────────────────────────
+			applyTransform()
+		</script>
+	</body>
+</html>
