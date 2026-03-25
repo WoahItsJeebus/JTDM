@@ -123,5 +123,38 @@ export function initGridDrag() {
 
 	applyTransform()
 
-	return { getOffset: () => ({ x: offsetX, y: offsetY }), surface, CELL }
+	// ── Cursor-proximity grid glow ────────────────────
+	const cursorGlow = document.getElementById("gridCursorGlow")
+	let glowCells = 3  // configurable: number of cells radius
+
+	function updateGlowRadius() {
+		if (!cursorGlow) return
+		const px = glowCells * CELL
+		cursorGlow.style.setProperty("--glow-radius", `${px}px`)
+	}
+	updateGlowRadius()
+
+	if (cursorGlow) {
+		document.addEventListener("pointermove", e => {
+			// Convert viewport coords to surface-local coords
+			const rect = surface.getBoundingClientRect()
+			const sx = e.clientX - rect.left
+			const sy = e.clientY - rect.top
+			const r = glowCells * CELL
+			cursorGlow.style.webkitMaskPosition = `${sx - r}px ${sy - r}px`
+			cursorGlow.style.maskPosition = `${sx - r}px ${sy - r}px`
+			cursorGlow.style.opacity = "1"
+		})
+
+		document.addEventListener("pointerleave", () => {
+			cursorGlow.style.opacity = "0"
+		})
+	}
+
+	return {
+		getOffset: () => ({ x: offsetX, y: offsetY }),
+		surface, CELL,
+		setGlowCells(n) { glowCells = n; updateGlowRadius() },
+		getGlowCells() { return glowCells },
+	}
 }

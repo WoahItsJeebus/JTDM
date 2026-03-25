@@ -30,6 +30,22 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 	background-size: 60px 60px;
 }
 
+/* Cursor-proximity glow — brighter grid lines masked by radial gradient */
+#gridCursorGlow {
+	position: absolute;
+	inset: 0;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M0 0H60V60' fill='none' stroke='%2300ffff' stroke-opacity='0.35' stroke-width='1'/%3E%3C/svg%3E");
+	background-size: 60px 60px;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity .2s;
+	-webkit-mask-image: radial-gradient(circle var(--glow-radius, 180px), rgba(0,0,0,1) 0%, transparent 100%);
+	        mask-image: radial-gradient(circle var(--glow-radius, 180px), rgba(0,0,0,1) 0%, transparent 100%);
+	-webkit-mask-repeat: no-repeat;
+	        mask-repeat: no-repeat;
+	will-change: mask-position, -webkit-mask-position;
+}
+
 /* Radial glow at the grid origin (visual anchor) */
 #gridGlow {
 	position: absolute;
