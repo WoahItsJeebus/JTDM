@@ -119,7 +119,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 /* Coordinate readout */
 #coordPill {
 	position: fixed;
-	bottom: 60px; left: 50%;
+	top: 16px; left: 50%;
 	transform: translateX(-50%);
 	font-family: monospace;
 	font-size: 0.75rem;
