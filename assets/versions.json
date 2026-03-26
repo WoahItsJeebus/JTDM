@@ -3,6 +3,42 @@
 	"1.0": {
 		"1.0.0": [
 			"Initial release."
+		],
+		"1.0.0.1": [
+			"Fixed pointer events on tab bar buttons.",
+			"Cleaned up redundant grid content pointer-events rule."
+		],
+		"1.0.0.2": [
+			"Improved grid drag handling with document-level events.",
+			"Added user-select prevention during interactions.",
+			"Fixed cursor showing grabbing state across the entire page while dragging.",
+			"Added interactive element detection to prevent drag conflicts with UI elements.",
+			"Improved touch support with touch-action: none."
+		],
+		"1.0.2.0": [
+			"Refactored codebase into modular CSS and JS files.",
+			"Added board system with draggable and resizable entries and sections.",
+			"Added 'Add' button with dropdown to create entries and sections.",
+			"Tab bar is now stationary while the grid scrolls beneath it.",
+			"Hero section now pans with the grid.",
+			"Added coordinate readout pill showing current grid position.",
+			"Added radial glow and crosshair marker at grid origin."
+		],
+		"1.0.2.5": [
+			"Sections now drag their contained entries along with them.",
+			"Added cursor-proximity grid glow effect.",
+			"Grid glow auto-fades after 1 second of inactivity.",
+			"Moved coordinate readout to top of screen.",
+			"Removed local settings page."
+		],
+		"1.0.2.8": [
+			"Added scroll wheel zoom on desktop.",
+			"Added pinch-to-zoom on mobile.",
+			"Zoom-aware dragging and resizing of board items.",
+			"Zoom-aware cursor glow positioning.",
+			"Added touch glow support on mobile.",
+			"Settings tab now redirects to external JUIL settings page.",
+			"Fixed mobile glow behavior."
 		]
 	}
 }
