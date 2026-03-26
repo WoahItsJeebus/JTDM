@@ -87,11 +87,17 @@ function createSectionEl(item, surface) {
 	el.style.background = item.color
 
 	el.innerHTML =
+		`<div class="section-glow"></div>` +
 		`<button class="board-delete" title="Delete">&times;</button>` +
 		`<button class="board-color" title="Change color">&#9673;</button>` +
 		`<input class="section-title" value="" placeholder="Section title" spellcheck="false">` +
+		`<div class="resize-handle resize-t"></div>` +
 		`<div class="resize-handle resize-r"></div>` +
 		`<div class="resize-handle resize-b"></div>` +
+		`<div class="resize-handle resize-l"></div>` +
+		`<div class="resize-handle resize-tl"></div>` +
+		`<div class="resize-handle resize-tr"></div>` +
+		`<div class="resize-handle resize-bl"></div>` +
 		`<div class="resize-handle resize-br"></div>`
 
 	el.querySelector(".section-title").value = item.title
@@ -113,6 +119,21 @@ function createSectionEl(item, surface) {
 		item.color = SECTION_COLORS[(idx + 1) % SECTION_COLORS.length]
 		el.style.background = item.color
 		persist()
+	})
+
+	// Cursor-proximity glow on section border
+	const glowEl = el.querySelector(".section-glow")
+	el.addEventListener("pointermove", e => {
+		const z = _grid ? _grid.getZoom() : 1
+		const rect = el.getBoundingClientRect()
+		const mx = (e.clientX - rect.left) / z - 20
+		const my = (e.clientY - rect.top) / z - 20
+		glowEl.style.webkitMaskPosition = `${mx}px ${my}px`
+		glowEl.style.maskPosition = `${mx}px ${my}px`
+		glowEl.style.opacity = "1"
+	})
+	el.addEventListener("pointerleave", () => {
+		glowEl.style.opacity = "0"
 	})
 
 	makeDraggable(el, item)
@@ -203,8 +224,14 @@ function makeResizable(el, item) {
 	const MIN_W = 160, MIN_H = 80
 
 	el.querySelectorAll(".resize-handle").forEach(handle => {
+		const cls = handle.className
+		const isLeft   = cls.includes("resize-l") || cls.includes("resize-tl") || cls.includes("resize-bl")
+		const isRight  = cls.includes("resize-r") || cls.includes("resize-tr") || cls.includes("resize-br")
+		const isTop    = cls.includes("resize-t") && !cls.includes("resize-tr") && !cls.includes("resize-tl") || cls.includes("resize-tl") || cls.includes("resize-tr")
+		const isBottom = cls.includes("resize-b") && !cls.includes("resize-br") && !cls.includes("resize-bl") || cls.includes("resize-bl") || cls.includes("resize-br")
+
 		let active = false
-		let startX, startY, origW, origH
+		let startX, startY, origW, origH, origX, origY
 
 		handle.addEventListener("pointerdown", e => {
 			e.preventDefault()
@@ -213,6 +240,7 @@ function makeResizable(el, item) {
 			handle.setPointerCapture(e.pointerId)
 			startX = e.clientX; startY = e.clientY
 			origW = item.w; origH = item.h
+			origX = item.x; origY = item.y
 		})
 
 		handle.addEventListener("pointermove", e => {
@@ -221,13 +249,27 @@ function makeResizable(el, item) {
 			const dx = (e.clientX - startX) / z
 			const dy = (e.clientY - startY) / z
 
-			if (handle.classList.contains("resize-r") || handle.classList.contains("resize-br")) {
+			if (isRight) {
 				item.w = Math.max(MIN_W, origW + dx)
 				el.style.width = `${item.w}px`
 			}
-			if (handle.classList.contains("resize-b") || handle.classList.contains("resize-br")) {
+			if (isBottom) {
 				item.h = Math.max(MIN_H, origH + dy)
 				el.style.height = `${item.h}px`
+			}
+			if (isLeft) {
+				const newW = origW - dx
+				if (newW >= MIN_W) {
+					item.w = newW; item.x = origX + dx
+					el.style.width = `${item.w}px`; el.style.left = `${item.x}px`
+				}
+			}
+			if (isTop) {
+				const newH = origH - dy
+				if (newH >= MIN_H) {
+					item.h = newH; item.y = origY + dy
+					el.style.height = `${item.h}px`; el.style.top = `${item.y}px`
+				}
 			}
 		})
 
