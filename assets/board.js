@@ -126,8 +126,8 @@ function createSectionEl(item, surface) {
 	el.addEventListener("pointermove", e => {
 		const z = _grid ? _grid.getZoom() : 1
 		const rect = el.getBoundingClientRect()
-		const mx = (e.clientX - rect.left) / z - 20
-		const my = (e.clientY - rect.top) / z - 20
+		const mx = (e.clientX - rect.left) / z - 40
+		const my = (e.clientY - rect.top) / z - 40
 		glowEl.style.webkitMaskPosition = `${mx}px ${my}px`
 		glowEl.style.maskPosition = `${mx}px ${my}px`
 		glowEl.style.opacity = "1"
