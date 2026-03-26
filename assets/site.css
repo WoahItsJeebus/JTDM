@@ -212,7 +212,8 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 	user-select: none;
 	-webkit-user-select: none;
 }
-.board-entry.dragging, .board-section.dragging { cursor: grabbing; z-index: 12 !important; }
+.board-entry.dragging { cursor: grabbing; z-index: 12 !important; }
+.board-section.dragging { cursor: grabbing; }
 
 /* Entries — rectangular bubbles */
 .board-entry {
@@ -305,38 +306,32 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .resize-handle {
 	position: absolute;
 	z-index: 3;
+	transition: opacity .15s;
+	opacity: 0;
 }
+.board-section:hover .resize-handle { opacity: 1; }
 
 /* Right edge */
 .resize-r {
-	top: 18px; right: 0; bottom: 18px; width: 7px;
+	top: 0; right: 0; bottom: 0; width: 10px;
 	cursor: ew-resize;
 	border-radius: 0 18px 18px 0;
-	transition: background .15s;
-}
-.resize-r:hover {
-	background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.12) 100%);
+	background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.10) 100%);
 }
 
 /* Bottom edge */
 .resize-b {
-	left: 18px; bottom: 0; right: 18px; height: 7px;
+	left: 0; bottom: 0; right: 0; height: 10px;
 	cursor: ns-resize;
 	border-radius: 0 0 18px 18px;
-	transition: background .15s;
-}
-.resize-b:hover {
-	background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.12) 100%);
+	background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.10) 100%);
 }
 
 /* Bottom-right corner */
 .resize-br {
-	right: 0; bottom: 0; width: 18px; height: 18px;
+	right: 0; bottom: 0; width: 22px; height: 22px;
 	cursor: nwse-resize;
 	border-radius: 0 0 18px 0;
-	transition: background .15s;
-}
-.resize-br:hover {
 	background: radial-gradient(ellipse at 100% 100%, rgba(255,255,255,0.15) 0%, transparent 70%);
 }
 

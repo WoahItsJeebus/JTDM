@@ -1,7 +1,7 @@
 {
-	"current": "1.0.2.9",
+	"current": "1.0.3.0",
 	"1.0": {
-		"1.0.0": [
+		"1.0.0.0": [
 			"Initial release."
 		],
 		"1.0.0.1": [
@@ -64,6 +64,11 @@
 		],
 		"1.0.2.9": [
 			"Added missing version patchnotes."
+		],
+		"1.0.3.0": [
+			"Fixed sections rendering on top of entries while being dragged.",
+			"Resize handle glow is now uniform and seamless across edges and corners.",
+			"Resize glow appears on section hover instead of individual handle hover."
 		]
 	}
 }
