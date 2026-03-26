@@ -1,5 +1,5 @@
 {
-	"current": "1.0.2.8",
+	"current": "1.0.2.9",
 	"1.0": {
 		"1.0.0": [
 			"Initial release."
@@ -15,30 +15,55 @@
 			"Added interactive element detection to prevent drag conflicts with UI elements.",
 			"Improved touch support with touch-action: none."
 		],
-		"1.0.2.0": [
-			"Refactored codebase into modular CSS and JS files.",
-			"Added board system with draggable and resizable entries and sections.",
-			"Added 'Add' button with dropdown to create entries and sections.",
+		"1.0.1.0": [
+			"Refactored inline styles into modular CSS and JS files.",
 			"Tab bar is now stationary while the grid scrolls beneath it.",
-			"Hero section now pans with the grid.",
+			"Hero section now pans with the grid."
+		],
+		"1.0.1.1": [
+			"Added board system with draggable entries and sections.",
+			"Board items persist to localStorage.",
+			"Added 'Add' button with dropdown to create entries and sections.",
 			"Added coordinate readout pill showing current grid position.",
 			"Added radial glow and crosshair marker at grid origin."
 		],
+		"1.0.2.0": [
+			"Added section color picker with preset colors.",
+			"Sections are now resizable via drag handles.",
+			"New items spawn at the center of the viewport.",
+			"Code cleanup and refactoring."
+		],
+		"1.0.2.1": [
+			"Sections now drag their contained entries along with them."
+		],
+		"1.0.2.2": [
+			"Added cursor-proximity grid glow effect."
+		],
+		"1.0.2.3": [
+			"Refined glow mask to use diameter-based sizing for smoother falloff."
+		],
+		"1.0.2.4": [
+			"Moved coordinate readout to top of screen."
+		],
 		"1.0.2.5": [
-			"Sections now drag their contained entries along with them.",
-			"Added cursor-proximity grid glow effect.",
 			"Grid glow auto-fades after 1 second of inactivity.",
-			"Moved coordinate readout to top of screen.",
-			"Removed local settings page."
+			"Disabled cursor glow on touch devices."
+		],
+		"1.0.2.6": [
+			"Settings tab now redirects to external JUIL settings page."
+		],
+		"1.0.2.7": [
+			"Touch now shows glow at finger position.",
+			"Glow follows finger during touch drag."
 		],
 		"1.0.2.8": [
 			"Added scroll wheel zoom on desktop.",
 			"Added pinch-to-zoom on mobile.",
 			"Zoom-aware dragging and resizing of board items.",
-			"Zoom-aware cursor glow positioning.",
-			"Added touch glow support on mobile.",
-			"Settings tab now redirects to external JUIL settings page.",
-			"Fixed mobile glow behavior."
+			"Zoom-aware cursor glow positioning."
+		],
+		"1.0.2.9": [
+			"Added missing version patchnotes."
 		]
 	}
 }
