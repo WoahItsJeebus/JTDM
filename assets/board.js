@@ -28,15 +28,17 @@ function saveItems(items) {
 
 let _items = []
 let _nextId = 1
+let _grid = null
 
 function persist() { saveItems(_items) }
 
 // ── Coordinate helper: viewport center → surface-local ─
 function viewportCenterOnSurface(surface) {
+	const z = _grid ? _grid.getZoom() : 1
 	const rect = surface.getBoundingClientRect()
 	return {
-		x: (window.innerWidth  / 2) - rect.left,
-		y: (window.innerHeight / 2) - rect.top,
+		x: ((window.innerWidth  / 2) - rect.left) / z,
+		y: ((window.innerHeight / 2) - rect.top) / z,
 	}
 }
 
@@ -169,8 +171,9 @@ function makeDraggable(el, item) {
 
 	el.addEventListener("pointermove", e => {
 		if (!dragging) return
-		const dx = e.clientX - startX
-		const dy = e.clientY - startY
+		const z = _grid ? _grid.getZoom() : 1
+		const dx = (e.clientX - startX) / z
+		const dy = (e.clientY - startY) / z
 		item.x = origLeft + dx
 		item.y = origTop  + dy
 		el.style.left = `${item.x}px`
@@ -214,8 +217,9 @@ function makeResizable(el, item) {
 
 		handle.addEventListener("pointermove", e => {
 			if (!active) return
-			const dx = e.clientX - startX
-			const dy = e.clientY - startY
+			const z = _grid ? _grid.getZoom() : 1
+			const dx = (e.clientX - startX) / z
+			const dy = (e.clientY - startY) / z
 
 			if (handle.classList.contains("resize-r") || handle.classList.contains("resize-br")) {
 				item.w = Math.max(MIN_W, origW + dx)
@@ -238,6 +242,7 @@ function makeResizable(el, item) {
 
 // ── Public init ────────────────────────────────────────
 export function initBoard(grid) {
+	_grid = grid
 	const surface = grid.surface
 	const addBtn  = document.getElementById("addBtn")
 	const wrap    = document.getElementById("addBtnWrap")
