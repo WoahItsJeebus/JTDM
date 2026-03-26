@@ -146,7 +146,7 @@ export function initGridDrag() {
 			glowTimer = setTimeout(() => { cursorGlow.style.opacity = "0" }, 1000)
 		}
 
-		// Mouse only — ignore touch-sourced pointer events
+		// Mouse — show glow, ignore touch-sourced pointer events
 		document.addEventListener("pointermove", e => {
 			if (e.pointerType === "touch") return
 			const rect = surface.getBoundingClientRect()
@@ -159,10 +159,16 @@ export function initGridDrag() {
 			cursorGlow.style.opacity = "0"
 		})
 
-		// Hide immediately on any touch start/end
-		document.addEventListener("touchstart", () => {
-			clearTimeout(glowTimer)
-			cursorGlow.style.opacity = "0"
+		// Touch — show glow at finger position; 1s auto-fade handles iOS stale input
+		document.addEventListener("touchstart", e => {
+			const t = e.changedTouches[0]
+			const rect = surface.getBoundingClientRect()
+			showGlow(t.clientX - rect.left, t.clientY - rect.top)
+		}, { passive: true })
+		document.addEventListener("touchmove", e => {
+			const t = e.changedTouches[0]
+			const rect = surface.getBoundingClientRect()
+			showGlow(t.clientX - rect.left, t.clientY - rect.top)
 		}, { passive: true })
 		document.addEventListener("touchend", () => {
 			clearTimeout(glowTimer)
