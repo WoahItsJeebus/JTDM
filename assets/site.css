@@ -6,6 +6,9 @@
 html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
 body { user-select: none; -webkit-user-select: none; background: var(--bg, #0b0f17); }
 
+/* Let the orb layer pan with the grid; promote to compositor layer */
+.bgOrbs { will-change: transform; }
+
 /* Grid viewport — fills the screen behind everything */
 #gridViewport {
 	position: fixed; inset: 0;

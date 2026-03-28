@@ -29,6 +29,7 @@ export function initGridDrag() {
 	const glow      = document.getElementById("gridGlow")
 	const origin    = document.getElementById("gridOrigin")
 	const coordPill = document.getElementById("coordPill")
+	const orbLayer  = document.querySelector(".bgOrbs")
 
 	if (!surface) return
 
@@ -43,6 +44,7 @@ export function initGridDrag() {
 
 	function applyTransform() {
 		surface.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${zoom})`
+		if (orbLayer) orbLayer.style.transform = `translate(${offsetX}px, ${offsetY}px)`
 
 		const cx = surface.offsetWidth  / 2
 		const cy = surface.offsetHeight / 2
