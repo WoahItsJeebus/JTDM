@@ -1,5 +1,5 @@
 {
-	"current": "1.0.3.1",
+	"current": "1.0.3.2",
 	"1.0": {
 		"1.0.0.0": [
 			"Initial release."
@@ -74,6 +74,9 @@
 			"Replaced resize handle glow with cursor-proximity border glow on sections.",
 			"Sections are now resizable from all sides and corners.",
 			"Border glow follows cursor within a 20px radius, fading to invisible beyond."
+		],
+		"1.0.3.2": [
+			"Fixed grid not showing orb background from JUIL."
 		]
 	}
 }
