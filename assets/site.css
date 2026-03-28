@@ -25,8 +25,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 */
 #gridSurface {
 	position: absolute;
-	inset: -200% -200% -200% -200%;
-	width: 500%; height: 500%;
+	inset: -5000%;
 	will-change: transform;
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M0 0H60V60' fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1'/%3E%3C/svg%3E");
 	background-size: 60px 60px;
